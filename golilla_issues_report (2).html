@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golilla Distribution - Problem Issues Report</title>
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --secondary: #2d3436;
+            --accent: #0066cc;
+            --accent-light: #e6f0ff;
+            --danger: #d63031;
+            --warning: #fdcb6e;
+            --success: #27ae60;
+            --border: #dfe6e9;
+            --text: #2d3436;
+            --text-light: #636e72;
+            --bg: #f8f9fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 40px 0;
+            margin: -40px -20px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 30px;
+            font-size: 0.95em;
+            color: #b0b8c1;
+        }
+
+        .header-meta strong {
+            color: white;
+            display: block;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            font-size: 0.95em;
+            color: var(--text);
+        }
+
+        select {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.95em;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        select:hover {
+            border-color: var(--accent);
+            box-shadow: 0 1px 4px rgba(0, 102, 204, 0.1);
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--accent);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .issues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(550px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .issue-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            cursor: pointer;
+        }
+
+        .issue-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .issue-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--secondary) 0%, #34495e 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            cursor: pointer;
+        }
+
+        .issue-header:hover {
+            background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+        }
+
+        .issue-title {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 6px;
+        }
+
+        .issue-category {
+            font-size: 0.8em;
+            display: inline-block;
+            padding: 3px 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .severity-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .severity-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .severity-indicator.critical {
+            background: var(--danger);
+            box-shadow: 0 0 10px rgba(214, 48, 49, 0.5);
+        }
+
+        .severity-indicator.high {
+            background: var(--warning);
+        }
+
+        .severity-indicator.medium {
+            background: #74b9ff;
+        }
+
+        .severity-label {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .issue-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .issue-card.expanded .issue-content {
+            max-height: 1000px;
+        }
+
+        .issue-body {
+            padding: 20px;
+        }
+
+        .issue-section {
+            margin-bottom: 18px;
+        }
+
+        .issue-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 3px;
+            height: 14px;
+            background: var(--accent);
+        }
+
+        .issue-description {
+            font-size: 0.95em;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .impact-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .impact-list li {
+            padding: 6px 0 6px 20px;
+            position: relative;
+            color: var(--text);
+            font-size: 0.95em;
+        }
+
+        .impact-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .status-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-tag.open {
+            background: #fee;
+            color: #c92a2a;
+        }
+
+        .status-tag.in-progress {
+            background: #fff3bf;
+            color: #856404;
+        }
+
+        .status-tag.investigation {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .recommendation {
+            background: #f0f4ff;
+            border-left: 3px solid var(--accent);
+            padding: 12px 14px;
+            border-radius: 3px;
+            font-size: 0.95em;
+            color: var(--text);
+        }
+
+        .toggle-arrow {
+            display: inline-block;
+            transition: transform 0.3s;
+            color: white;
+            font-weight: bold;
+        }
+
+        .issue-card.expanded .toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .add-issue-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .add-issue-btn:hover {
+            background: #0052a3;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 40px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--accent-light);
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            font-size: 1.6em;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.8em;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.95em;
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .impact-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .impact-input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        .impact-input-group button {
+            padding: 10px 16px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .impact-input-group button:hover {
+            background: #c0392b;
+        }
+
+        .add-impact-btn {
+            padding: 10px 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: background 0.2s;
+        }
+
+        .add-impact-btn:hover {
+            background: #0052a3;
+        }
+
+        .impact-list-preview {
+            background: var(--accent-light);
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+
+        .impact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            font-size: 0.95em;
+            color: var(--text);
+        }
+
+        .impact-item::before {
+            content: '→';
+            color: var(--accent);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 14px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-save:hover {
+            background: #229954;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 14px;
+            background: var(--border);
+            color: var(--text);
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-cancel:hover {
+            background: #d0d5dd;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-weight: 600;
+        }
+
+        .issue-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            color: var(--text-light);
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .issues-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.6em;
+            }
+
+            .header-meta {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Golilla Distribution | Problem Issues Report</h1>
+            <div class="header-meta">
+                <div>
+                    <strong>Cliente</strong>
+                    Leroy Merlin
+                </div>
+                <div>
+                    <strong>Progetto</strong>
+                    Nuova Integrazione Distribuzione
+                </div>
+                <div>
+                    <strong>Data Report</strong>
+                    <span id="report-date"></span>
+                </div>
+                <div>
+                    <strong>Status</strong>
+                    In Fase di Risoluzione
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <div class="filter-group">
+                <label for="category-filter">Filtra per Categoria:</label>
+                <select id="category-filter">
+                    <option value="">Tutte le Categorie</option>
+                    <option value="IT">IT & Integrazione</option>
+                    <option value="Data">Data & Sincronizzazione</option>
+                    <option value="Operativo">Operativo</option>
+                    <option value="Compliance">Compliance & Audit</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="severity-filter">Filtra per Severità:</label>
+                <select id="severity-filter">
+                    <option value="">Tutte le Severità</option>
+                    <option value="critical">🔴 Critico</option>
+                    <option value="high">🟠 Alto</option>
+                    <option value="medium">🔵 Medio</option>
+                </select>
+            </div>
+            <button class="add-issue-btn" id="add-issue-btn">+ Aggiungi Problema</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="total-issues">12</span>
+                <span class="stat-label">Problemi Totali</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="critical-count">3</span>
+                <span class="stat-label">Critici</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="high-count">5</span>
+                <span class="stat-label">Alti</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="medium-count">4</span>
+                <span class="stat-label">Medi</span>
+            </div>
+        </div>
+
+        <div id="issues-container" class="issues-grid"></div>
+
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📭</div>
+            <h3>Nessun problema trovato</h3>
+            <p>Modifica i filtri per visualizzare altri risultati</p>
+        </div>
+
+        <footer>
+            <p><strong>Prossimi Step:</strong> Pianificazione riunione tecnica con team IT interno e Leroy Merlin per definire roadmap risolutiva. 
+            Timeline target: risoluzione problemi critici entro 7 giorni, ottimizzazione complessiva entro 30 giorni.</p>
+        </footer>
+    </div>
+
+    <!-- Modal per aggiungere nuovo problema -->
+    <div id="issue-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Aggiungi Nuovo Problema</h2>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+
+            <form id="issue-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="issue-title">Titolo Problema *</label>
+                        <input type="text" id="issue-title" required placeholder="es. EDI Orders Feed - Ritardi di Sincronizzazione">
+                    </div>
+                    <div class="form-group">
+                        <label for="issue-category">Categoria *</label>
+                        <select id="issue-category" required>
+                            <option value="">Seleziona categoria</option>
+                            <option value="IT">IT & Integrazione</option>
+                            <option value="Data">Data & Sincronizzazione</option>
+                            <option value="Operativo">Operativo</option>
+                            <option value="Compliance">Compliance & Audit</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="issue-severity">Severità *</label>
+                        <select id="issue-severity" required>
+                            <option value="">Seleziona severità</option>
+                            <option value="critical">🔴 Critico - Stop operativo immediato</option>
+                            <option value="high">🟠 Alto - Impatto significativo su SLA</option>
+                            <option value="medium">🔵 Medio - Inefficienza operativa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="issue-status">Status *</label>
+                        <select id="issue-status" required>
+                            <option value="">Seleziona status</option>
+                            <option value="in-progress">In Risoluzione</option>
+                            <option value="investigation">In Investigazione</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="issue-description">Descrizione del Problema *</label>
+                    <textarea id="issue-description" required placeholder="Descrivi il problema in dettaglio. Come si manifesta? Quando è stato identificato?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="issue-root-cause">Root Cause Analysis *</label>
+                    <textarea id="issue-root-cause" required placeholder="Qual è la causa radice del problema? Cosa lo ha generato?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Impatto Operativo (aggiungi punti) *</label>
+                    <div class="impact-input-group">
+                        <input type="text" id="impact-input" placeholder="es. Ritardo nell'allocazione warehouse">
+                        <button type="button" class="add-impact-btn" id="add-impact-btn">Aggiungi</button>
+                    </div>
+                    <div id="impact-list" class="impact-list-preview">
+                        <p style="color: var(--text-light); font-size: 0.9em; margin: 0;">Nessun impatto aggiunto. Aggiungi almeno uno.</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="issue-recommendation">Raccomandazione & Timeline *</label>
+                    <textarea id="issue-recommendation" required placeholder="Quale soluzione proponi? Qual è la timeline stimata per la risoluzione?"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-save">Salva Problema</button>
+                    <button type="button" class="btn-cancel" id="modal-cancel">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+        let issues = [];
+
+        function initializeReport() {
+            populateIssues(issues);
+            updateStats();
+            setReportDate();
+            setupFilters();
+        }
+
+        function populateIssues(issuesToDisplay) {
+            const container = document.getElementById('issues-container');
+            container.innerHTML = '';
+
+            if (issuesToDisplay.length === 0) {
+                document.getElementById('empty-state').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('empty-state').style.display = 'none';
+
+            issuesToDisplay.forEach((issue, index) => {
+                const card = createIssueCard(issue);
+                container.appendChild(card);
+            });
+        }
+
+        function createIssueCard(issue) {
+            const card = document.createElement('div');
+            card.className = 'issue-card';
+            card.dataset.category = issue.category;
+            card.dataset.severity = issue.severity;
+            card.style.position = 'relative';
+
+            const severityColor = {
+                critical: '#d63031',
+                high: '#fdcb6e',
+                medium: '#74b9ff'
+            };
+
+            const severityLabel = {
+                critical: 'CRITICO',
+                high: 'ALTO',
+                medium: 'MEDIO'
+            };
+
+            card.innerHTML = `
+                <button class="delete-btn" data-issue-id="${issue.id}">🗑 Elimina</button>
+                <div class="issue-header">
+                    <div style="flex: 1;">
+                        <div class="issue-title">${issue.title}</div>
+                        <span class="issue-category">${issue.category}</span>
+                        <span class="status-tag ${issue.status}" style="margin-left: 10px;">
+                            ${issue.status === 'in-progress' ? 'In Risoluzione' : 'In Investigazione'}
+                        </span>
+                    </div>
+                    <div class="severity-badge">
+                        <span class="severity-indicator ${issue.severity}"></span>
+                        <span class="severity-label">${severityLabel[issue.severity]}</span>
+                        <span class="toggle-arrow">▼</span>
+                    </div>
+                </div>
+                <div class="issue-content">
+                    <div class="issue-body">
+                        <div class="issue-section">
+                            <div class="section-title">Descrizione</div>
+                            <div class="issue-description">${issue.description}</div>
+                        </div>
+
+                        <div class="issue-section">
+                            <div class="section-title">Impatto Operativo</div>
+                            <ul class="impact-list">
+                                ${issue.impact.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="issue-section">
+                            <div class="section-title">Root Cause</div>
+                            <div class="issue-description">${issue.rootCause}</div>
+                        </div>
+
+                        <div class="issue-section">
+                            <div class="section-title">Raccomandazione</div>
+                            <div class="recommendation">${issue.recommendation}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                card.classList.toggle('expanded');
+            });
+
+            // Event listener per il bottone delete
+            const deleteBtn = card.querySelector('.delete-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const issueId = parseInt(deleteBtn.dataset.issueId);
+                    deleteIssue(issueId);
+                });
+            }
+
+            return card;
+        }
+
+        function updateStats() {
+            document.getElementById('total-issues').textContent = issues.length;
+            document.getElementById('critical-count').textContent = issues.filter(i => i.severity === 'critical').length;
+            document.getElementById('high-count').textContent = issues.filter(i => i.severity === 'high').length;
+            document.getElementById('medium-count').textContent = issues.filter(i => i.severity === 'medium').length;
+        }
+
+        function setReportDate() {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('report-date').textContent = today.toLocaleDateString('it-IT', options);
+        }
+
+        function setupFilters() {
+            document.getElementById('category-filter').addEventListener('change', applyFilters);
+            document.getElementById('severity-filter').addEventListener('change', applyFilters);
+        }
+
+        function applyFilters() {
+            const categoryFilter = document.getElementById('category-filter').value;
+            const severityFilter = document.getElementById('severity-filter').value;
+
+            const filtered = issues.filter(issue => {
+                const matchCategory = !categoryFilter || issue.category === categoryFilter;
+                const matchSeverity = !severityFilter || issue.severity === severityFilter;
+                return matchCategory && matchSeverity;
+            });
+
+            populateIssues(filtered);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', initializeReport);
+
+        // Modal functionality
+        const modal = document.getElementById('issue-modal');
+        const addIssueBtn = document.getElementById('add-issue-btn');
+        const modalClose = document.getElementById('modal-close');
+        const modalCancel = document.getElementById('modal-cancel');
+        const issueForm = document.getElementById('issue-form');
+        const addImpactBtn = document.getElementById('add-impact-btn');
+        const impactInput = document.getElementById('impact-input');
+        const impactList = document.getElementById('impact-list');
+
+        let currentImpacts = [];
+
+        addIssueBtn.addEventListener('click', openModal);
+        modalClose.addEventListener('click', closeModal);
+        modalCancel.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        addImpactBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const value = impactInput.value.trim();
+            if (value) {
+                currentImpacts.push(value);
+                impactInput.value = '';
+                updateImpactPreview();
+            }
+        });
+
+        impactInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addImpactBtn.click();
+            }
+        });
+
+        issueForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveNewIssue();
+        });
+
+        function openModal() {
+            currentImpacts = [];
+            issueForm.reset();
+            updateImpactPreview();
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            currentImpacts = [];
+            issueForm.reset();
+        }
+
+        function updateImpactPreview() {
+            if (currentImpacts.length === 0) {
+                impactList.innerHTML = '<p style="color: var(--text-light); font-size: 0.9em; margin: 0;">Nessun impatto aggiunto. Aggiungi almeno uno.</p>';
+            } else {
+                impactList.innerHTML = currentImpacts.map((impact, index) => 
+                    `<div class="impact-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 0;">
+                        ${impact}
+                        <button type="button" style="background: none; border: none; color: #e74c3c; cursor: pointer; margin-left: auto; padding: 0; font-weight: bold;" onclick="removeImpact(${index})">✕</button>
+                    </div>`
+                ).join('');
+            }
+        }
+
+        window.removeImpact = function(index) {
+            currentImpacts.splice(index, 1);
+            updateImpactPreview();
+        }
+
+        function saveNewIssue() {
+            if (currentImpacts.length === 0) {
+                alert('Aggiungi almeno un punto di impatto');
+                return;
+            }
+
+            const newIssue = {
+                id: Math.max(...issues.map(i => i.id), 0) + 1,
+                title: document.getElementById('issue-title').value,
+                category: document.getElementById('issue-category').value,
+                severity: document.getElementById('issue-severity').value,
+                status: document.getElementById('issue-status').value,
+                description: document.getElementById('issue-description').value,
+                impact: currentImpacts,
+                rootCause: document.getElementById('issue-root-cause').value,
+                recommendation: document.getElementById('issue-recommendation').value
+            };
+
+            issues.push(newIssue);
+            saveIssuesToStorage();
+            closeModal();
+            applyFilters();
+            updateStats();
+        }
+
+        function saveIssuesToStorage() {
+            localStorage.setItem('golilla_issues', JSON.stringify(issues));
+        }
+
+        function loadIssuesFromStorage() {
+            const stored = localStorage.getItem('golilla_issues');
+            if (stored) {
+                try {
+                    const loaded = JSON.parse(stored);
+                    // Mantieni gli issue originali e aggiungi quelli caricati
+                    const originalIds = issues.map(i => i.id);
+                    const newIssues = loaded.filter(i => !originalIds.includes(i.id));
+                    issues.push(...newIssues);
+                } catch (e) {
+                    console.log('Errore nel caricamento dati');
+                }
+            }
+        }
+
+        function deleteIssue(issueId) {
+            if (confirm('Sei sicuro di voler eliminare questo problema?')) {
+                issues = issues.filter(i => i.id !== issueId);
+                saveIssuesToStorage();
+                applyFilters();
+                updateStats();
+            }
+        }
+
+        window.deleteIssue = deleteIssue;
+
+        // Carica dati salvati all'inizio
+        loadIssuesFromStorage();
+    </script>
+</body>
+</html>
