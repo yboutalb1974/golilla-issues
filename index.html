@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golilla Distribution - Problem Issues Report</title>
+    <title>Golilla Distribution - Issues Manager</title>
     <style>
         :root {
             --primary: #1a1a1a;
@@ -17,6 +17,10 @@
             --text: #2d3436;
             --text-light: #636e72;
             --bg: #f8f9fa;
+            --kanban-todo: #f0f0f0;
+            --kanban-progress: #fff3bf;
+            --kanban-resolved: #d4edda;
+            --kanban-closed: #e2e3e5;
         }
 
         * {
@@ -30,25 +34,18 @@
             background: linear-gradient(135deg, #f5f7fa 0%, #f8f9fa 100%);
             color: var(--text);
             line-height: 1.6;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
         }
 
         header {
             background: var(--primary);
             color: white;
             padding: 40px 0;
-            margin: -40px -20px 40px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
 
         .header-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -57,7 +54,6 @@
             font-size: 2.2em;
             font-weight: 600;
             margin-bottom: 8px;
-            letter-spacing: -0.5px;
         }
 
         .header-meta {
@@ -76,10 +72,54 @@
             margin-bottom: 2px;
         }
 
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.95em;
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .controls {
             display: flex;
             gap: 20px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             flex-wrap: wrap;
             align-items: center;
         }
@@ -93,276 +133,23 @@
         .filter-group label {
             font-weight: 600;
             font-size: 0.95em;
-            color: var(--text);
         }
 
-        select {
+        select, input {
             padding: 10px 14px;
             border: 1px solid var(--border);
             border-radius: 4px;
             font-size: 0.95em;
             background: white;
             color: var(--text);
-            cursor: pointer;
-            transition: all 0.2s;
         }
 
-        select:hover {
-            border-color: var(--accent);
-            box-shadow: 0 1px 4px rgba(0, 102, 204, 0.1);
-        }
-
-        .stats {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: 6px;
-            border-left: 4px solid var(--accent);
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: var(--accent);
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 0.85em;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-        }
-
-        .issues-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(550px, 1fr));
-            gap: 24px;
-            margin-bottom: 40px;
-        }
-
-        .issue-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
-            cursor: pointer;
-        }
-
-        .issue-card:hover {
-            border-color: var(--accent);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-            transform: translateY(-2px);
-        }
-
-        .issue-header {
-            padding: 20px;
-            background: linear-gradient(135deg, var(--secondary) 0%, #34495e 100%);
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            cursor: pointer;
-        }
-
-        .issue-header:hover {
-            background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
-        }
-
-        .issue-title {
-            font-weight: 600;
-            font-size: 1.1em;
-            margin-bottom: 6px;
-        }
-
-        .issue-category {
-            font-size: 0.8em;
-            display: inline-block;
-            padding: 3px 10px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .severity-badge {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .severity-indicator {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            display: block;
-        }
-
-        .severity-indicator.critical {
-            background: var(--danger);
-            box-shadow: 0 0 10px rgba(214, 48, 49, 0.5);
-        }
-
-        .severity-indicator.high {
-            background: var(--warning);
-        }
-
-        .severity-indicator.medium {
-            background: #74b9ff;
-        }
-
-        .severity-label {
-            font-size: 0.75em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        .issue-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .issue-card.expanded .issue-content {
-            max-height: 1000px;
-        }
-
-        .issue-body {
-            padding: 20px;
-        }
-
-        .issue-section {
-            margin-bottom: 18px;
-        }
-
-        .issue-section:last-child {
-            margin-bottom: 0;
-        }
-
-        .section-title {
-            font-weight: 700;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .section-title::before {
-            content: '';
-            display: inline-block;
-            width: 3px;
-            height: 14px;
-            background: var(--accent);
-        }
-
-        .issue-description {
-            font-size: 0.95em;
-            color: var(--text);
-            line-height: 1.6;
-        }
-
-        .impact-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .impact-list li {
-            padding: 6px 0 6px 20px;
-            position: relative;
-            color: var(--text);
-            font-size: 0.95em;
-        }
-
-        .impact-list li::before {
-            content: '→';
-            position: absolute;
-            left: 0;
-            color: var(--accent);
-            font-weight: bold;
-        }
-
-        .status-tag {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 3px;
-            font-size: 0.8em;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-tag.open {
-            background: #fee;
-            color: #c92a2a;
-        }
-
-        .status-tag.in-progress {
-            background: #fff3bf;
-            color: #856404;
-        }
-
-        .status-tag.investigation {
-            background: var(--accent-light);
-            color: var(--accent);
-        }
-
-        .recommendation {
-            background: #f0f4ff;
-            border-left: 3px solid var(--accent);
-            padding: 12px 14px;
-            border-radius: 3px;
-            font-size: 0.95em;
-            color: var(--text);
-        }
-
-        .toggle-arrow {
-            display: inline-block;
-            transition: transform 0.3s;
-            color: white;
-            font-weight: bold;
-        }
-
-        .issue-card.expanded .toggle-arrow {
-            transform: rotate(180deg);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-light);
-        }
-
-        .empty-state-icon {
-            font-size: 3em;
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            font-size: 1.3em;
-            margin-bottom: 8px;
-            color: var(--text);
-        }
-
-        .add-issue-btn {
+        .btn-primary {
             background: var(--accent);
             color: white;
             border: none;
             padding: 12px 24px;
             border-radius: 4px;
-            font-size: 0.95em;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -370,11 +157,138 @@
             letter-spacing: 0.5px;
         }
 
-        .add-issue-btn:hover {
+        .btn-primary:hover {
             background: #0052a3;
-            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
         }
 
+        /* KANBAN STYLES */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .kanban-column {
+            background: white;
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .kanban-header {
+            font-weight: 700;
+            font-size: 1.1em;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kanban-header.todo {
+            background: var(--kanban-todo);
+            color: var(--text);
+        }
+
+        .kanban-header.progress {
+            background: var(--kanban-progress);
+            color: var(--text);
+        }
+
+        .kanban-header.resolved {
+            background: var(--kanban-resolved);
+            color: var(--text);
+        }
+
+        .kanban-header.closed {
+            background: var(--kanban-closed);
+            color: var(--text);
+        }
+
+        .kanban-count {
+            font-size: 0.8em;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 3px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .kanban-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 100px;
+        }
+
+        .kanban-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .kanban-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .kanban-card.critical {
+            border-left: 4px solid var(--danger);
+        }
+
+        .kanban-card.high {
+            border-left: 4px solid var(--warning);
+        }
+
+        .kanban-card.medium {
+            border-left: 4px solid #74b9ff;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            background: var(--accent-light);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .badge.critical {
+            background: rgba(214, 48, 49, 0.1);
+            color: var(--danger);
+        }
+
+        .card-owner {
+            font-size: 0.8em;
+            color: var(--text-light);
+            padding: 6px 0;
+            border-top: 1px solid var(--border);
+            margin-top: 10px;
+        }
+
+        /* MODAL STYLES */
         .modal {
             display: none;
             position: fixed;
@@ -398,10 +312,10 @@
             background: white;
             border-radius: 8px;
             width: 90%;
-            max-width: 700px;
+            max-width: 800px;
             padding: 40px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            animation: slideIn 0.3s ease-out;
         }
 
         @keyframes slideIn {
@@ -426,7 +340,6 @@
 
         .modal-header h2 {
             color: var(--primary);
-            font-size: 1.6em;
             margin: 0;
         }
 
@@ -436,20 +349,20 @@
             font-size: 1.8em;
             color: var(--text-light);
             cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .modal-close:hover {
-            color: var(--primary);
+            color: var(--text);
+        }
+
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+            margin-bottom: 20px;
         }
 
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
@@ -457,7 +370,6 @@
             font-weight: 600;
             margin-bottom: 8px;
             color: var(--text);
-            font-size: 0.95em;
         }
 
         .form-group input,
@@ -469,21 +381,11 @@
             border-radius: 4px;
             font-family: inherit;
             font-size: 0.95em;
-            color: var(--text);
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-light);
         }
 
         .form-group textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 80px;
         }
 
         .form-row {
@@ -492,36 +394,62 @@
             gap: 20px;
         }
 
-        .impact-input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
+        /* COMMENTS SECTION */
+        .comments-section {
+            background: var(--accent-light);
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
         }
 
-        .impact-input-group input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid var(--border);
+        .comments-title {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .comment {
+            background: white;
+            padding: 12px;
             border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85em;
+        }
+
+        .comment-user {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .comment-time {
+            color: var(--text-light);
+        }
+
+        .comment-text {
+            color: var(--text);
             font-size: 0.95em;
         }
 
-        .impact-input-group button {
-            padding: 10px 16px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
+        .add-comment {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
         }
 
-        .impact-input-group button:hover {
-            background: #c0392b;
+        .add-comment input {
+            flex: 1;
+            padding: 10px;
         }
 
-        .add-impact-btn {
+        .add-comment button {
             padding: 10px 16px;
             background: var(--accent);
             color: white;
@@ -529,136 +457,71 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.95em;
-            transition: background 0.2s;
         }
 
-        .add-impact-btn:hover {
-            background: #0052a3;
+        /* LOGBOOK */
+        .logbook-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        .impact-list-preview {
-            background: var(--accent-light);
+        .logbook-table th {
+            background: var(--secondary);
+            color: white;
             padding: 12px;
-            border-radius: 4px;
-            margin-top: 12px;
-        }
-
-        .impact-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 0;
-            font-size: 0.95em;
-            color: var(--text);
-        }
-
-        .impact-item::before {
-            content: '→';
-            color: var(--accent);
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-        }
-
-        .btn-save {
-            flex: 1;
-            padding: 14px;
-            background: var(--success);
-            color: white;
-            border: none;
-            border-radius: 4px;
+            text-align: left;
             font-weight: 600;
-            font-size: 0.95em;
-            cursor: pointer;
-            transition: background 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .btn-save:hover {
-            background: #229954;
+        .logbook-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
         }
 
-        .btn-cancel {
-            flex: 1;
-            padding: 14px;
-            background: var(--border);
-            color: var(--text);
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 0.95em;
-            cursor: pointer;
-            transition: background 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .logbook-table tr:hover {
+            background: var(--accent-light);
         }
 
-        .btn-cancel:hover {
-            background: #d0d5dd;
-        }
-
-        .delete-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 14px;
+        .action-badge {
+            display: inline-block;
+            padding: 4px 10px;
             border-radius: 3px;
             font-size: 0.8em;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s;
             font-weight: 600;
         }
 
-        .issue-card:hover .delete-btn {
-            opacity: 1;
+        .action-badge.created {
+            background: #d4edda;
+            color: #155724;
         }
 
-        .delete-btn:hover {
-            background: #c0392b;
+        .action-badge.deleted {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-badge.changed {
+            background: #cce5ff;
+            color: #004085;
         }
 
         footer {
-            margin-top: 60px;
-            padding-top: 30px;
-            border-top: 1px solid var(--border);
+            text-align: center;
+            padding: 30px 20px;
             color: var(--text-light);
             font-size: 0.9em;
-            text-align: center;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
         }
 
         @media (max-width: 768px) {
-            .issues-grid {
+            .kanban-board {
                 grid-template-columns: 1fr;
             }
 
-            h1 {
-                font-size: 1.6em;
-            }
-
-            .header-meta {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .controls {
-                flex-direction: column;
-            }
-
-            .stats {
-                flex-direction: column;
+            .form-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -666,7 +529,7 @@
 <body>
     <header>
         <div class="header-content">
-            <h1>Golilla Distribution | Problem Issues Report</h1>
+            <h1>Golilla Distribution | Issues Manager</h1>
             <div class="header-meta">
                 <div>
                     <strong>Cliente</strong>
@@ -680,437 +543,412 @@
                     <strong>Data Report</strong>
                     <span id="report-date"></span>
                 </div>
-                <div>
-                    <strong>Status</strong>
-                    In Fase di Risoluzione
-                </div>
             </div>
         </div>
     </header>
 
     <div class="container">
         <div class="controls">
-            <div class="filter-group">
-                <label for="category-filter">Filtra per Categoria:</label>
-                <select id="category-filter">
-                    <option value="">Tutte le Categorie</option>
-                    <option value="IT">IT & Integrazione</option>
-                    <option value="Data">Data & Sincronizzazione</option>
-                    <option value="Operativo">Operativo</option>
-                    <option value="Compliance">Compliance & Audit</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="severity-filter">Filtra per Severità:</label>
-                <select id="severity-filter">
-                    <option value="">Tutte le Severità</option>
-                    <option value="critical">🔴 Critico</option>
-                    <option value="high">🟠 Alto</option>
-                    <option value="medium">🔵 Medio</option>
-                </select>
-            </div>
-            <button class="add-issue-btn" id="add-issue-btn">+ Aggiungi Problema</button>
+            <button class="btn-primary" id="add-issue-btn">+ Aggiungi Problema</button>
         </div>
 
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-number" id="total-issues">12</span>
-                <span class="stat-label">Problemi Totali</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" id="critical-count">3</span>
-                <span class="stat-label">Critici</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" id="high-count">5</span>
-                <span class="stat-label">Alti</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" id="medium-count">4</span>
-                <span class="stat-label">Medi</span>
-            </div>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="kanban">📊 Kanban Board</button>
+            <button class="tab-btn" data-tab="logbook">📋 Logbook</button>
+            <button class="tab-btn" data-tab="stats">📈 Statistiche</button>
         </div>
 
-        <div id="issues-container" class="issues-grid"></div>
-
-        <div id="empty-state" class="empty-state" style="display: none;">
-            <div class="empty-state-icon">📭</div>
-            <h3>Nessun problema trovato</h3>
-            <p>Modifica i filtri per visualizzare altri risultati</p>
+        <!-- KANBAN TAB -->
+        <div id="kanban" class="tab-content active">
+            <div class="kanban-board" id="kanban-board"></div>
         </div>
 
-        <footer>
-            <p><strong>Prossimi Step:</strong> Pianificazione riunione tecnica con team IT interno e Leroy Merlin per definire roadmap risolutiva. 
-            Timeline target: risoluzione problemi critici entro 7 giorni, ottimizzazione complessiva entro 30 giorni.</p>
-        </footer>
+        <!-- LOGBOOK TAB -->
+        <div id="logbook" class="tab-content">
+            <h2>Audit Trail</h2>
+            <table class="logbook-table" id="logbook-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Azione</th>
+                        <th>Problema</th>
+                        <th>Utente</th>
+                        <th>Dettagli</th>
+                    </tr>
+                </thead>
+                <tbody id="logbook-body"></tbody>
+            </table>
+        </div>
+
+        <!-- STATS TAB -->
+        <div id="stats" class="tab-content">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div style="background: white; padding: 20px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 2.5em; font-weight: 700; color: var(--accent);" id="stat-total">0</div>
+                    <div style="color: var(--text-light); margin-top: 8px; text-transform: uppercase; font-weight: 600;">Totali</div>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 2.5em; font-weight: 700; color: var(--danger);" id="stat-critical">0</div>
+                    <div style="color: var(--text-light); margin-top: 8px; text-transform: uppercase; font-weight: 600;">Critici</div>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 2.5em; font-weight: 700; color: var(--warning);" id="stat-high">0</div>
+                    <div style="color: var(--text-light); margin-top: 8px; text-transform: uppercase; font-weight: 600;">Alti</div>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 2.5em; font-weight: 700; color: #27ae60;" id="stat-resolved">0</div>
+                    <div style="color: var(--text-light); margin-top: 8px; text-transform: uppercase; font-weight: 600;">Risolti</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Modal per aggiungere nuovo problema -->
+    <!-- MODAL PER AGGIUNGERE/VISUALIZZARE PROBLEMA -->
     <div id="issue-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Aggiungi Nuovo Problema</h2>
+                <h2 id="modal-title">Aggiungi Nuovo Problema</h2>
                 <button class="modal-close" id="modal-close">&times;</button>
             </div>
 
-            <form id="issue-form">
-                <div class="form-row">
+            <div class="modal-body">
+                <form id="issue-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="issue-title">Titolo *</label>
+                            <input type="text" id="issue-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="issue-category">Categoria *</label>
+                            <select id="issue-category" required>
+                                <option value="">Seleziona</option>
+                                <option value="IT">IT & Integrazione</option>
+                                <option value="Data">Data & Sincronizzazione</option>
+                                <option value="Operativo">Operativo</option>
+                                <option value="Compliance">Compliance & Audit</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="issue-severity">Severità *</label>
+                            <select id="issue-severity" required>
+                                <option value="critical">🔴 Critico</option>
+                                <option value="high">🟠 Alto</option>
+                                <option value="medium">🔵 Medio</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="issue-owner">Assegnato a</label>
+                            <input type="text" id="issue-owner" placeholder="Nome/Email">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="issue-priority">Priorità</label>
+                            <select id="issue-priority">
+                                <option value="low">Bassa</option>
+                                <option value="medium" selected>Media</option>
+                                <option value="high">Alta</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="issue-status">Status *</label>
+                            <select id="issue-status" required>
+                                <option value="todo">To Do</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label for="issue-title">Titolo Problema *</label>
-                        <input type="text" id="issue-title" required placeholder="es. EDI Orders Feed - Ritardi di Sincronizzazione">
+                        <label for="issue-description">Descrizione *</label>
+                        <textarea id="issue-description" required></textarea>
                     </div>
+
                     <div class="form-group">
-                        <label for="issue-category">Categoria *</label>
-                        <select id="issue-category" required>
-                            <option value="">Seleziona categoria</option>
-                            <option value="IT">IT & Integrazione</option>
-                            <option value="Data">Data & Sincronizzazione</option>
-                            <option value="Operativo">Operativo</option>
-                            <option value="Compliance">Compliance & Audit</option>
-                        </select>
+                        <label for="issue-root-cause">Root Cause *</label>
+                        <textarea id="issue-root-cause" required></textarea>
                     </div>
-                </div>
 
-                <div class="form-row">
                     <div class="form-group">
-                        <label for="issue-severity">Severità *</label>
-                        <select id="issue-severity" required>
-                            <option value="">Seleziona severità</option>
-                            <option value="critical">🔴 Critico - Stop operativo immediato</option>
-                            <option value="high">🟠 Alto - Impatto significativo su SLA</option>
-                            <option value="medium">🔵 Medio - Inefficienza operativa</option>
-                        </select>
+                        <label for="issue-impact">Impatto (separato da virgole)</label>
+                        <textarea id="issue-impact"></textarea>
                     </div>
+
                     <div class="form-group">
-                        <label for="issue-status">Status *</label>
-                        <select id="issue-status" required>
-                            <option value="">Seleziona status</option>
-                            <option value="in-progress">In Risoluzione</option>
-                            <option value="investigation">In Investigazione</option>
-                        </select>
+                        <label for="issue-recommendation">Raccomandazione *</label>
+                        <textarea id="issue-recommendation" required></textarea>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="issue-description">Descrizione del Problema *</label>
-                    <textarea id="issue-description" required placeholder="Descrivi il problema in dettaglio. Come si manifesta? Quando è stato identificato?"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="issue-root-cause">Root Cause Analysis *</label>
-                    <textarea id="issue-root-cause" required placeholder="Qual è la causa radice del problema? Cosa lo ha generato?"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Impatto Operativo (aggiungi punti) *</label>
-                    <div class="impact-input-group">
-                        <input type="text" id="impact-input" placeholder="es. Ritardo nell'allocazione warehouse">
-                        <button type="button" class="add-impact-btn" id="add-impact-btn">Aggiungi</button>
+                    <div id="comments-section" class="comments-section" style="display: none;">
+                        <div class="comments-title">Commenti</div>
+                        <div id="comments-list"></div>
+                        <div class="add-comment">
+                            <input type="text" id="comment-input" placeholder="Aggiungi un commento...">
+                            <button type="button" id="add-comment-btn">Invia</button>
+                        </div>
                     </div>
-                    <div id="impact-list" class="impact-list-preview">
-                        <p style="color: var(--text-light); font-size: 0.9em; margin: 0;">Nessun impatto aggiunto. Aggiungi almeno uno.</p>
+
+                    <div style="display: flex; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+                        <button type="submit" class="btn-primary">Salva Problema</button>
+                        <button type="button" class="btn-primary" id="modal-cancel" style="background: var(--border); color: var(--text);">Chiudi</button>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="issue-recommendation">Raccomandazione & Timeline *</label>
-                    <textarea id="issue-recommendation" required placeholder="Quale soluzione proponi? Qual è la timeline stimata per la risoluzione?"></textarea>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="submit" class="btn-save">Salva Problema</button>
-                    <button type="button" class="btn-cancel" id="modal-cancel">Annulla</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
+    <footer>
+        <p>Golilla Issues Manager - Sincronizzato con Google Sheets in tempo reale</p>
+    </footer>
+
     <script>
-
+        const API_URL = "https://script.google.com/macros/s/AKfycby-1sxoJkM4akjHNFj2V6gXsBFipE9zKcGu5xl2OvLswTylkwkg_NnJsCAPaddgc-Uy/exec";
         let issues = [];
-        const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHJ5ER5CFgD7eYAtOzKMzAXOO3KtbDvK3IUuuecUBKAjWj7TYT3VkeUMeuMDBMOvim/exec";
+        let logbook = [];
+        let comments = {};
+        let currentIssueId = null;
 
-        function initializeReport() {
-            loadIssuesFromSheets();
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
             setReportDate();
-            setupFilters();
+            setupEventListeners();
+        });
+
+        function loadData() {
+            fetch(API_URL + "?action=getIssues")
+                .then(r => r.json())
+                .then(data => {
+                    issues = data;
+                    renderKanban();
+                    updateStats();
+                })
+                .catch(e => console.error('Errore caricamento issue:', e));
+
+            fetch(API_URL + "?action=getLogbook")
+                .then(r => r.json())
+                .then(data => {
+                    logbook = data;
+                    renderLogbook();
+                })
+                .catch(e => console.error('Errore caricamento logbook:', e));
         }
 
-        function populateIssues(issuesToDisplay) {
-            const container = document.getElementById('issues-container');
-            container.innerHTML = '';
+        function renderKanban() {
+            const board = document.getElementById('kanban-board');
+            board.innerHTML = '';
 
-            if (issuesToDisplay.length === 0) {
-                document.getElementById('empty-state').style.display = 'block';
-                return;
-            }
+            const columns = [
+                { status: 'todo', title: 'To Do', color: 'todo' },
+                { status: 'in-progress', title: 'In Progress', color: 'progress' },
+                { status: 'resolved', title: 'Resolved', color: 'resolved' },
+                { status: 'closed', title: 'Closed', color: 'closed' }
+            ];
 
-            document.getElementById('empty-state').style.display = 'none';
-
-            issuesToDisplay.forEach((issue, index) => {
-                const card = createIssueCard(issue);
-                container.appendChild(card);
-            });
-        }
-
-        function createIssueCard(issue) {
-            const card = document.createElement('div');
-            card.className = 'issue-card';
-            card.dataset.category = issue.category;
-            card.dataset.severity = issue.severity;
-            card.style.position = 'relative';
-
-            const severityColor = {
-                critical: '#d63031',
-                high: '#fdcb6e',
-                medium: '#74b9ff'
-            };
-
-            const severityLabel = {
-                critical: 'CRITICO',
-                high: 'ALTO',
-                medium: 'MEDIO'
-            };
-
-            card.innerHTML = `
-                <button class="delete-btn" data-issue-id="${issue.id}">🗑 Elimina</button>
-                <div class="issue-header">
-                    <div style="flex: 1;">
-                        <div class="issue-title">${issue.title}</div>
-                        <span class="issue-category">${issue.category}</span>
-                        <span class="status-tag ${issue.status}" style="margin-left: 10px;">
-                            ${issue.status === 'in-progress' ? 'In Risoluzione' : 'In Investigazione'}
-                        </span>
+            columns.forEach(col => {
+                const filtered = issues.filter(i => i.status === col.status);
+                const column = document.createElement('div');
+                column.className = 'kanban-column';
+                
+                column.innerHTML = `
+                    <div class="kanban-header ${col.color}">
+                        <span>${col.title}</span>
+                        <span class="kanban-count">${filtered.length}</span>
                     </div>
-                    <div class="severity-badge">
-                        <span class="severity-indicator ${issue.severity}"></span>
-                        <span class="severity-label">${severityLabel[issue.severity]}</span>
-                        <span class="toggle-arrow">▼</span>
-                    </div>
-                </div>
-                <div class="issue-content">
-                    <div class="issue-body">
-                        <div class="issue-section">
-                            <div class="section-title">Descrizione</div>
-                            <div class="issue-description">${issue.description}</div>
+                    <div class="kanban-cards" id="cards-${col.status}"></div>
+                `;
+
+                const cardsContainer = column.querySelector(`#cards-${col.status}`);
+                filtered.forEach(issue => {
+                    const card = document.createElement('div');
+                    card.className = `kanban-card ${issue.severity}`;
+                    card.innerHTML = `
+                        <div class="card-title">${issue.title}</div>
+                        <div class="card-meta">
+                            <span class="badge ${issue.severity}">${issue.severity.toUpperCase()}</span>
+                            <span class="badge">${issue.category}</span>
                         </div>
-
-                        <div class="issue-section">
-                            <div class="section-title">Impatto Operativo</div>
-                            <ul class="impact-list">
-                                ${issue.impact.map(item => `<li>${item}</li>`).join('')}
-                            </ul>
-                        </div>
-
-                        <div class="issue-section">
-                            <div class="section-title">Root Cause</div>
-                            <div class="issue-description">${issue.rootCause}</div>
-                        </div>
-
-                        <div class="issue-section">
-                            <div class="section-title">Raccomandazione</div>
-                            <div class="recommendation">${issue.recommendation}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            card.addEventListener('click', () => {
-                card.classList.toggle('expanded');
-            });
-
-            // Event listener per il bottone delete
-            const deleteBtn = card.querySelector('.delete-btn');
-            if (deleteBtn) {
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const issueId = parseInt(deleteBtn.dataset.issueId);
-                    deleteIssue(issueId);
+                        <div class="card-owner">👤 ${issue.owner || 'Non assegnato'}</div>
+                    `;
+                    card.addEventListener('click', () => openIssue(issue.id));
+                    cardsContainer.appendChild(card);
                 });
-            }
 
-            return card;
+                board.appendChild(column);
+            });
+        }
+
+        function renderLogbook() {
+            const body = document.getElementById('logbook-body');
+            body.innerHTML = '';
+
+            logbook.slice().reverse().forEach(entry => {
+                const row = document.createElement('tr');
+                const date = new Date(entry.timestamp).toLocaleString('it-IT');
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td><span class="action-badge ${entry.action}">${entry.action.toUpperCase().replace(/_/g, ' ')}</span></td>
+                    <td>${entry.issueId}</td>
+                    <td>${entry.user}</td>
+                    <td>${entry.details}</td>
+                `;
+                body.appendChild(row);
+            });
         }
 
         function updateStats() {
-            document.getElementById('total-issues').textContent = issues.length;
-            document.getElementById('critical-count').textContent = issues.filter(i => i.severity === 'critical').length;
-            document.getElementById('high-count').textContent = issues.filter(i => i.severity === 'high').length;
-            document.getElementById('medium-count').textContent = issues.filter(i => i.severity === 'medium').length;
+            document.getElementById('stat-total').textContent = issues.length;
+            document.getElementById('stat-critical').textContent = issues.filter(i => i.severity === 'critical').length;
+            document.getElementById('stat-high').textContent = issues.filter(i => i.severity === 'high').length;
+            document.getElementById('stat-resolved').textContent = issues.filter(i => i.status === 'resolved').length;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('add-issue-btn').addEventListener('click', () => {
+                currentIssueId = null;
+                document.getElementById('issue-form').reset();
+                document.getElementById('modal-title').textContent = 'Aggiungi Nuovo Problema';
+                document.getElementById('comments-section').style.display = 'none';
+                openModal();
+            });
+
+            document.getElementById('modal-close').addEventListener('click', closeModal);
+            document.getElementById('modal-cancel').addEventListener('click', closeModal);
+
+            document.getElementById('issue-form').addEventListener('submit', saveIssue);
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    e.target.classList.add('active');
+                    document.getElementById(e.target.dataset.tab).classList.add('active');
+                });
+            });
+        }
+
+        function openIssue(issueId) {
+            currentIssueId = issueId;
+            const issue = issues.find(i => i.id === issueId);
+            
+            document.getElementById('issue-title').value = issue.title;
+            document.getElementById('issue-category').value = issue.category;
+            document.getElementById('issue-severity').value = issue.severity;
+            document.getElementById('issue-owner').value = issue.owner || '';
+            document.getElementById('issue-priority').value = issue.priority || 'medium';
+            document.getElementById('issue-status').value = issue.status;
+            document.getElementById('issue-description').value = issue.description;
+            document.getElementById('issue-root-cause').value = issue.rootCause;
+            document.getElementById('issue-impact').value = issue.impact.join(', ');
+            document.getElementById('issue-recommendation').value = issue.recommendation;
+
+            document.getElementById('modal-title').textContent = `Problema #${issueId}`;
+            document.getElementById('comments-section').style.display = 'block';
+            loadComments(issueId);
+            openModal();
+        }
+
+        function loadComments(issueId) {
+            fetch(API_URL + `?action=getComments&issueId=${issueId}`)
+                .then(r => r.json())
+                .then(data => {
+                    const commentsList = document.getElementById('comments-list');
+                    commentsList.innerHTML = '';
+                    data.forEach(c => {
+                        const div = document.createElement('div');
+                        div.className = 'comment';
+                        const date = new Date(c.timestamp).toLocaleString('it-IT');
+                        div.innerHTML = `
+                            <div class="comment-header">
+                                <span class="comment-user">${c.user}</span>
+                                <span class="comment-time">${date}</span>
+                            </div>
+                            <div class="comment-text">${c.comment}</div>
+                        `;
+                        commentsList.appendChild(div);
+                    });
+
+                    document.getElementById('add-comment-btn').onclick = () => addComment(issueId);
+                })
+                .catch(e => console.error('Errore caricamento commenti:', e));
+        }
+
+        function addComment(issueId) {
+            const text = document.getElementById('comment-input').value.trim();
+            if (!text) return;
+
+            fetch(API_URL + "?action=addComment", {
+                method: "POST",
+                body: JSON.stringify({
+                    issueId: issueId,
+                    user: "Team",
+                    comment: text
+                })
+            })
+            .then(r => r.json())
+            .then(() => {
+                document.getElementById('comment-input').value = '';
+                loadComments(issueId);
+                loadData();
+            });
+        }
+
+        function saveIssue(e) {
+            e.preventDefault();
+
+            const issueData = {
+                id: currentIssueId || Math.max(...issues.map(i => i.id), 0) + 1,
+                title: document.getElementById('issue-title').value,
+                category: document.getElementById('issue-category').value,
+                severity: document.getElementById('issue-severity').value,
+                owner: document.getElementById('issue-owner').value,
+                priority: document.getElementById('issue-priority').value,
+                status: document.getElementById('issue-status').value,
+                description: document.getElementById('issue-description').value,
+                rootCause: document.getElementById('issue-root-cause').value,
+                impact: document.getElementById('issue-impact').value.split(',').map(s => s.trim()).filter(s => s),
+                recommendation: document.getElementById('issue-recommendation').value
+            };
+
+            if (currentIssueId) {
+                fetch(API_URL + "?action=updateIssue", {
+                    method: "POST",
+                    body: JSON.stringify(issueData)
+                })
+                .then(() => {
+                    closeModal();
+                    loadData();
+                });
+            } else {
+                fetch(API_URL + "?action=addIssue", {
+                    method: "POST",
+                    body: JSON.stringify(issueData)
+                })
+                .then(() => {
+                    closeModal();
+                    loadData();
+                });
+            }
+        }
+
+        function openModal() {
+            document.getElementById('issue-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('issue-modal').classList.remove('active');
         }
 
         function setReportDate() {
             const today = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('report-date').textContent = today.toLocaleDateString('it-IT', options);
+            document.getElementById('report-date').textContent = today.toLocaleDateString('it-IT');
         }
-
-        function setupFilters() {
-            document.getElementById('category-filter').addEventListener('change', applyFilters);
-            document.getElementById('severity-filter').addEventListener('change', applyFilters);
-        }
-
-        function applyFilters() {
-            const categoryFilter = document.getElementById('category-filter').value;
-            const severityFilter = document.getElementById('severity-filter').value;
-
-            const filtered = issues.filter(issue => {
-                const matchCategory = !categoryFilter || issue.category === categoryFilter;
-                const matchSeverity = !severityFilter || issue.severity === severityFilter;
-                return matchCategory && matchSeverity;
-            });
-
-            populateIssues(filtered);
-        }
-
-        // Initialize on load
-        window.addEventListener('DOMContentLoaded', initializeReport);
-
-        // Modal functionality
-        const modal = document.getElementById('issue-modal');
-        const addIssueBtn = document.getElementById('add-issue-btn');
-        const modalClose = document.getElementById('modal-close');
-        const modalCancel = document.getElementById('modal-cancel');
-        const issueForm = document.getElementById('issue-form');
-        const addImpactBtn = document.getElementById('add-impact-btn');
-        const impactInput = document.getElementById('impact-input');
-        const impactList = document.getElementById('impact-list');
-
-        let currentImpacts = [];
-
-        addIssueBtn.addEventListener('click', openModal);
-        modalClose.addEventListener('click', closeModal);
-        modalCancel.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        addImpactBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const value = impactInput.value.trim();
-            if (value) {
-                currentImpacts.push(value);
-                impactInput.value = '';
-                updateImpactPreview();
-            }
-        });
-
-        impactInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addImpactBtn.click();
-            }
-        });
-
-        issueForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            saveNewIssue();
-        });
-
-        function openModal() {
-            currentImpacts = [];
-            issueForm.reset();
-            updateImpactPreview();
-            modal.classList.add('active');
-        }
-
-        function closeModal() {
-            modal.classList.remove('active');
-            currentImpacts = [];
-            issueForm.reset();
-        }
-
-        function updateImpactPreview() {
-            if (currentImpacts.length === 0) {
-                impactList.innerHTML = '<p style="color: var(--text-light); font-size: 0.9em; margin: 0;">Nessun impatto aggiunto. Aggiungi almeno uno.</p>';
-            } else {
-                impactList.innerHTML = currentImpacts.map((impact, index) => 
-                    `<div class="impact-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 0;">
-                        ${impact}
-                        <button type="button" style="background: none; border: none; color: #e74c3c; cursor: pointer; margin-left: auto; padding: 0; font-weight: bold;" onclick="removeImpact(${index})">✕</button>
-                    </div>`
-                ).join('');
-            }
-        }
-
-        window.removeImpact = function(index) {
-            currentImpacts.splice(index, 1);
-            updateImpactPreview();
-        }
-
-        function saveNewIssue() {
-            if (currentImpacts.length === 0) {
-                alert('Aggiungi almeno un punto di impatto');
-                return;
-            }
-
-            const newIssue = {
-                id: Math.max(...issues.map(i => i.id), 0) + 1,
-                title: document.getElementById('issue-title').value,
-                category: document.getElementById('issue-category').value,
-                severity: document.getElementById('issue-severity').value,
-                status: document.getElementById('issue-status').value,
-                description: document.getElementById('issue-description').value,
-                impact: currentImpacts,
-                rootCause: document.getElementById('issue-root-cause').value,
-                recommendation: document.getElementById('issue-recommendation').value
-            };
-
-            // Invia a Google Sheets via API
-            fetch(GOOGLE_APPS_SCRIPT_URL + "?action=addIssue", {
-                method: "POST",
-                body: JSON.stringify(newIssue)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    issues.push(newIssue);
-                    closeModal();
-                    loadIssuesFromSheets();
-                    updateStats();
-                }
-            })
-            .catch(error => {
-                console.error('Errore nel salvataggio:', error);
-                alert('Errore nel salvataggio del problema. Riprova.');
-            });
-        }
-
-        function loadIssuesFromSheets() {
-            fetch(GOOGLE_APPS_SCRIPT_URL + "?action=getIssues")
-                .then(response => response.json())
-                .then(data => {
-                    issues = data;
-                    populateIssues(issues);
-                    updateStats();
-                })
-                .catch(error => {
-                    console.error('Errore nel caricamento:', error);
-                    populateIssues([]);
-                });
-        }
-
-        function deleteIssue(issueId) {
-            if (confirm('Sei sicuro di voler eliminare questo problema?')) {
-                fetch(GOOGLE_APPS_SCRIPT_URL + "?action=deleteIssue&id=" + issueId, {
-                    method: "POST"
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        issues = issues.filter(i => i.id !== issueId);
-                        applyFilters();
-                        updateStats();
-                    }
-                })
-                .catch(error => {
-                    console.error('Errore nell\'eliminazione:', error);
-                    alert('Errore nell\'eliminazione. Riprova.');
-                });
-            }
-        }
-
-        window.deleteIssue = deleteIssue;
     </script>
 </body>
 </html>
