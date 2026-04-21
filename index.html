@@ -828,10 +828,10 @@
     <script>
 
         let issues = [];
+        const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHJ5ER5CFgD7eYAtOzKMzAXOO3KtbDvK3IUuuecUBKAjWj7TYT3VkeUMeuMDBMOvim/exec";
 
         function initializeReport() {
-            populateIssues(issues);
-            updateStats();
+            loadIssuesFromSheets();
             setReportDate();
             setupFilters();
         }
@@ -1056,45 +1056,61 @@
                 recommendation: document.getElementById('issue-recommendation').value
             };
 
-            issues.push(newIssue);
-            saveIssuesToStorage();
-            closeModal();
-            applyFilters();
-            updateStats();
-        }
-
-        function saveIssuesToStorage() {
-            localStorage.setItem('golilla_issues', JSON.stringify(issues));
-        }
-
-        function loadIssuesFromStorage() {
-            const stored = localStorage.getItem('golilla_issues');
-            if (stored) {
-                try {
-                    const loaded = JSON.parse(stored);
-                    // Mantieni gli issue originali e aggiungi quelli caricati
-                    const originalIds = issues.map(i => i.id);
-                    const newIssues = loaded.filter(i => !originalIds.includes(i.id));
-                    issues.push(...newIssues);
-                } catch (e) {
-                    console.log('Errore nel caricamento dati');
+            // Invia a Google Sheets via API
+            fetch(GOOGLE_APPS_SCRIPT_URL + "?action=addIssue", {
+                method: "POST",
+                body: JSON.stringify(newIssue)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    issues.push(newIssue);
+                    closeModal();
+                    loadIssuesFromSheets();
+                    updateStats();
                 }
-            }
+            })
+            .catch(error => {
+                console.error('Errore nel salvataggio:', error);
+                alert('Errore nel salvataggio del problema. Riprova.');
+            });
+        }
+
+        function loadIssuesFromSheets() {
+            fetch(GOOGLE_APPS_SCRIPT_URL + "?action=getIssues")
+                .then(response => response.json())
+                .then(data => {
+                    issues = data;
+                    populateIssues(issues);
+                    updateStats();
+                })
+                .catch(error => {
+                    console.error('Errore nel caricamento:', error);
+                    populateIssues([]);
+                });
         }
 
         function deleteIssue(issueId) {
             if (confirm('Sei sicuro di voler eliminare questo problema?')) {
-                issues = issues.filter(i => i.id !== issueId);
-                saveIssuesToStorage();
-                applyFilters();
-                updateStats();
+                fetch(GOOGLE_APPS_SCRIPT_URL + "?action=deleteIssue&id=" + issueId, {
+                    method: "POST"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        issues = issues.filter(i => i.id !== issueId);
+                        applyFilters();
+                        updateStats();
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore nell\'eliminazione:', error);
+                    alert('Errore nell\'eliminazione. Riprova.');
+                });
             }
         }
 
         window.deleteIssue = deleteIssue;
-
-        // Carica dati salvati all'inizio
-        loadIssuesFromStorage();
     </script>
 </body>
 </html>
